@@ -10,8 +10,11 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="provider-details" />
+        <Stack.Screen name="booking-create" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

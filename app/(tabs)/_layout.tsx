@@ -1,9 +1,19 @@
 import { Tabs } from 'expo-router';
 import { Home, Search, Briefcase, User } from 'lucide-react-native';
 import { useAuth } from '@/context/AuthContext';
+import { ActivityIndicator, View } from 'react-native';
 
 export default function TabsLayout() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#2563eb" />
+      </View>
+    );
+  }
+
   const isProvider = user?.role === 'provider';
 
   return (
@@ -18,6 +28,7 @@ export default function TabsLayout() {
           paddingBottom: 8,
           paddingTop: 8,
           height: 64,
+          backgroundColor: '#ffffff',
         },
         tabBarLabelStyle: {
           fontSize: 12,

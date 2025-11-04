@@ -28,6 +28,13 @@ export default function Home() {
           .limit(5),
       ]);
 
+      if (categoriesResult.error) {
+        console.error('Categories error:', categoriesResult.error);
+      }
+      if (providersResult.error) {
+        console.error('Providers error:', providersResult.error);
+      }
+
       setCategories(categoriesResult.data || []);
       setFeaturedProviders(providersResult.data || []);
     } catch (error) {
