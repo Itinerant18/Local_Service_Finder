@@ -65,6 +65,12 @@ export default function BookingCreate() {
       return;
     }
 
+    // Validate service description length (max 500 chars as per PRD)
+    if (description && description.length > 500) {
+      Alert.alert('Error', 'Service description must be under 500 characters');
+      return;
+    }
+
     setCreating(true);
     try {
       const { error } = await supabase.from('bookings').insert({
@@ -203,7 +209,10 @@ export default function BookingCreate() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Service Description</Text>
+            <View style={styles.labelWithCounter}>
+              <Text style={styles.label}>Service Description</Text>
+              <Text style={styles.charCounter}>{description.length}/500</Text>
+            </View>
             <TextInput
               style={[styles.textArea]}
               placeholder="Describe the service needed..."
@@ -212,6 +221,7 @@ export default function BookingCreate() {
               editable={!creating}
               multiline
               numberOfLines={4}
+              maxLength={500}
             />
           </View>
         </View>
@@ -237,6 +247,13 @@ export default function BookingCreate() {
             This is an estimated price. Final price may vary based on actual service time and
             complexity.
           </Text>
+        </View>
+
+        <View style={styles.policyCard}>
+          <Text style={styles.policyTitle}>Cancellation Policy</Text>
+          <Text style={styles.policyText}>• Free cancellation: Up to 4 hours before service</Text>
+          <Text style={styles.policyText}>• 50% charge: 2-4 hours before service</Text>
+          <Text style={styles.policyText}>• 100% charge: Less than 2 hours before service</Text>
         </View>
       </ScrollView>
 
@@ -337,6 +354,16 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 8,
   },
+  labelWithCounter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  charCounter: {
+    fontSize: 12,
+    color: '#9ca3af',
+  },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -434,6 +461,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#78350f',
     lineHeight: 16,
+  },
+  policyCard: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    padding: 12,
+    marginBottom: 20,
+  },
+  policyTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0c4a6e',
+    marginBottom: 8,
+  },
+  policyText: {
+    fontSize: 11,
+    color: '#0369a1',
+    lineHeight: 18,
+    marginBottom: 2,
   },
   footer: {
     flexDirection: 'row',

@@ -51,6 +51,7 @@ export default function Bookings() {
           style={[
             styles.statusBadge,
             item.status === 'confirmed' && styles.statusConfirmed,
+            item.status === 'in_progress' && styles.statusInProgress,
             item.status === 'completed' && styles.statusCompleted,
             item.status === 'cancelled' && styles.statusCancelled,
           ]}
@@ -59,11 +60,12 @@ export default function Bookings() {
             style={[
               styles.statusText,
               item.status === 'confirmed' && styles.statusTextConfirmed,
+              item.status === 'in_progress' && styles.statusTextInProgress,
               item.status === 'completed' && styles.statusTextCompleted,
               item.status === 'cancelled' && styles.statusTextCancelled,
             ]}
           >
-            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+            {item.status === 'in_progress' ? 'In Progress' : item.status.charAt(0).toUpperCase() + item.status.slice(1)}
           </Text>
         </View>
       </View>
@@ -226,6 +228,9 @@ const styles = StyleSheet.create({
   statusConfirmed: {
     backgroundColor: '#dbeafe',
   },
+  statusInProgress: {
+    backgroundColor: '#fef3c7',
+  },
   statusCompleted: {
     backgroundColor: '#dcfce7',
   },
@@ -239,6 +244,9 @@ const styles = StyleSheet.create({
   },
   statusTextConfirmed: {
     color: '#0c4a6e',
+  },
+  statusTextInProgress: {
+    color: '#92400e',
   },
   statusTextCompleted: {
     color: '#166534',

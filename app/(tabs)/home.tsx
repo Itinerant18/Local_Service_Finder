@@ -19,7 +19,7 @@ export default function Home() {
   const loadHomeData = async () => {
     try {
       const [categoriesResult, providersResult] = await Promise.all([
-        supabase.from('service_categories').select('*').limit(6),
+        supabase.from('service_categories').select('*'),
         supabase
           .from('service_providers')
           .select('*, users:id(full_name, profile_picture_url)')

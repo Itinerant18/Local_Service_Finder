@@ -41,9 +41,31 @@ export default function ProfileSetup() {
       return;
     }
 
-    if (user?.role === 'provider' && (!selectedCategory || !experience || !hourlyRate)) {
-      Alert.alert('Error', 'Please complete all provider details');
+    // Validate phone number (10 digits)
+    if (phone.length !== 10) {
+      Alert.alert('Error', 'Phone number must be 10 digits');
       return;
+    }
+
+    if (user?.role === 'provider') {
+      if (!selectedCategory || !experience || !hourlyRate) {
+        Alert.alert('Error', 'Please complete all provider details');
+        return;
+      }
+
+      // Validate experience (0-50 years as per PRD)
+      const expYears = parseInt(experience);
+      if (isNaN(expYears) || expYears < 0 || expYears > 50) {
+        Alert.alert('Error', 'Experience must be between 0 and 50 years');
+        return;
+      }
+
+      // Validate hourly rate (₹0-₹10,000 as per PRD)
+      const rate = parseFloat(hourlyRate);
+      if (isNaN(rate) || rate < 0 || rate > 10000) {
+        Alert.alert('Error', 'Hourly rate must be between ₹0 and ₹10,000');
+        return;
+      }
     }
 
     setSaving(true);
@@ -151,7 +173,7 @@ export default function ProfileSetup() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Years of Experience *</Text>
+              <Text style={styles.label}>Years of Experience * (0-50)</Text>
               <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.input}
@@ -166,7 +188,7 @@ export default function ProfileSetup() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Hourly Rate (₹) *</Text>
+              <Text style={styles.label}>Hourly Rate (₹) * (0-10,000)</Text>
               <View style={styles.inputWrapper}>
                 <TextInput
                   style={styles.input}
