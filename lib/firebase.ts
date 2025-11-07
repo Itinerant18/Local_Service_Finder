@@ -67,6 +67,7 @@ export type ServiceProvider = {
   experience_years: number;
   hourly_rate: number;
   service_description: string | null;
+  services_offered?: string[]; // e.g., ["AC repair", "Wiring fix"]
   service_area_radius_km: number;
   verification_status: 'pending' | 'verified' | 'rejected' | 'suspended';
   verification_documents: any;

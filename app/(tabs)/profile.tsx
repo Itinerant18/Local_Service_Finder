@@ -52,7 +52,7 @@ export default function Profile() {
             </Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.editButton}>
+        <TouchableOpacity style={styles.editButton} onPress={() => router.push('/profile-edit')}>
           <Edit2 size={20} color="#2563eb" strokeWidth={2} />
         </TouchableOpacity>
       </View>

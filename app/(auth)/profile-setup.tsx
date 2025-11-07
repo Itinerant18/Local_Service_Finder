@@ -16,6 +16,7 @@ export default function ProfileSetup() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [experience, setExperience] = useState('');
   const [hourlyRate, setHourlyRate] = useState('');
+  const [servicesOffered, setServicesOffered] = useState(''); // comma-separated list
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -82,6 +83,12 @@ export default function ProfileSetup() {
           hourly_rate: parseFloat(hourlyRate),
           verification_status: 'pending',
           service_description: null,
+          services_offered: servicesOffered
+            ? servicesOffered
+                .split(',')
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0)
+            : [],
           service_area_radius_km: 10,
           verification_documents: null,
           id_proof_url: null,
@@ -174,6 +181,20 @@ export default function ProfileSetup() {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Services Offered (comma separated)</Text>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g., Wiring fix, AC installation, Fan repair"
+                  value={servicesOffered}
+                  onChangeText={setServicesOffered}
+                  editable={!saving}
+                  multiline
+                />
+              </View>
             </View>
 
             <View style={styles.formGroup}>
