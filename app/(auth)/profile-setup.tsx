@@ -2,7 +2,8 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator,
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase, ServiceCategory } from '@/lib/supabase';
+import { ServiceCategory } from '@/lib/firebase';
+import { getServiceCategories, createServiceProvider } from '@/lib/realtime-helpers';
 import { useEffect } from 'react';
 import { User, Phone } from 'lucide-react-native';
 
@@ -24,10 +25,8 @@ export default function ProfileSetup() {
 
   const loadCategories = async () => {
     try {
-      const { data } = await supabase
-        .from('service_categories')
-        .select('*');
-      setCategories(data || []);
+      const categoriesData = await getServiceCategories();
+      setCategories(categoriesData);
     } catch (error) {
       console.error('Error loading categories:', error);
     } finally {
@@ -76,15 +75,20 @@ export default function ProfileSetup() {
       });
 
       if (user?.role === 'provider') {
-        const { error } = await supabase.from('service_providers').insert({
+        await createServiceProvider({
           id: user.id,
-          category_id: selectedCategory,
+          category_id: selectedCategory!,
           experience_years: parseInt(experience),
           hourly_rate: parseFloat(hourlyRate),
           verification_status: 'pending',
+          service_description: null,
+          service_area_radius_km: 10,
+          verification_documents: null,
+          id_proof_url: null,
+          address_proof_url: null,
+          certifications: null,
+          response_time_minutes: null,
         });
-
-        if (error) throw error;
       }
 
       router.replace('/(tabs)');

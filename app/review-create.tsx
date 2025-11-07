@@ -11,7 +11,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { getBookingById, getReviewByBookingId, createReview, updateProviderRating } from '@/lib/realtime-helpers';
 import { ArrowLeft, Star } from 'lucide-react-native';
 
 export default function ReviewCreate() {
@@ -31,14 +31,9 @@ export default function ReviewCreate() {
     if (!bookingId) return;
 
     try {
-      const { data } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('id', bookingId)
-        .maybeSingle();
-
-      if (data) {
-        setBooking(data);
+      const bookingData = await getBookingById(bookingId as string);
+      if (bookingData) {
+        setBooking(bookingData);
       }
     } catch (error) {
       console.error('Error loading booking:', error);
@@ -65,29 +60,21 @@ export default function ReviewCreate() {
     setLoading(true);
     try {
       // Check if review already exists
-      const { data: existingReview } = await supabase
-        .from('reviews')
-        .select('id')
-        .eq('booking_id', bookingId)
-        .maybeSingle();
+      const existingReview = await getReviewByBookingId(bookingId as string);
 
       if (existingReview) {
         Alert.alert('Error', 'You have already reviewed this booking');
+        setLoading(false);
         return;
       }
 
-      const { error } = await supabase.from('reviews').insert({
-        booking_id: bookingId,
+      await createReview({
+        booking_id: bookingId as string,
         customer_id: user.id,
-        provider_id: providerId,
+        provider_id: providerId as string,
         rating: rating,
         review_text: reviewText || null,
-        review_images: [],
-        helpful_votes: 0,
-        unhelpful_votes: 0,
       });
-
-      if (error) throw error;
 
       // Update provider's average rating
       await updateProviderRating(providerId as string);

@@ -2,7 +2,8 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndi
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase, ServiceProvider, ServiceCategory } from '@/lib/supabase';
+import { ServiceProvider, ServiceCategory } from '@/lib/firebase';
+import { getServiceCategories, getServiceProviders } from '@/lib/realtime-helpers';
 import { MapPin, Star } from 'lucide-react-native';
 
 export default function Home() {
@@ -18,25 +19,17 @@ export default function Home() {
 
   const loadHomeData = async () => {
     try {
-      const [categoriesResult, providersResult] = await Promise.all([
-        supabase.from('service_categories').select('*'),
-        supabase
-          .from('service_providers')
-          .select('*, users:id(full_name, profile_picture_url)')
-          .eq('verification_status', 'verified')
-          .order('average_rating', { ascending: false })
-          .limit(5),
+      const [categories, providers] = await Promise.all([
+        getServiceCategories(),
+        getServiceProviders({
+          verificationStatus: 'verified',
+          orderByRating: true,
+          limitCount: 5,
+        }),
       ]);
 
-      if (categoriesResult.error) {
-        console.error('Categories error:', categoriesResult.error);
-      }
-      if (providersResult.error) {
-        console.error('Providers error:', providersResult.error);
-      }
-
-      setCategories(categoriesResult.data || []);
-      setFeaturedProviders(providersResult.data || []);
+      setCategories(categories);
+      setFeaturedProviders(providers);
     } catch (error) {
       console.error('Error loading home data:', error);
     } finally {

@@ -11,7 +11,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { getProviderById, createBooking } from '@/lib/realtime-helpers';
 import { ArrowLeft, Calendar, Clock, MapPin, DollarSign } from 'lucide-react-native';
 
 export default function BookingCreate() {
@@ -35,13 +35,8 @@ export default function BookingCreate() {
     if (!providerId) return;
 
     try {
-      const { data } = await supabase
-        .from('service_providers')
-        .select('*, users:id(full_name)')
-        .eq('id', providerId)
-        .maybeSingle();
-
-      setProvider(data);
+      const providerData = await getProviderById(providerId as string);
+      setProvider(providerData);
     } catch (error) {
       console.error('Error loading provider:', error);
       Alert.alert('Error', 'Failed to load provider details');
@@ -73,20 +68,26 @@ export default function BookingCreate() {
 
     setCreating(true);
     try {
-      const { error } = await supabase.from('bookings').insert({
+      await createBooking({
         customer_id: user.id,
-        provider_id: providerId,
+        provider_id: providerId as string,
         booking_date: date,
         booking_time: time,
         duration_minutes: parseInt(duration),
         service_address: address,
-        service_description: description,
+        service_description: description || null,
         estimated_price: estimatedPrice,
+        final_price: null,
         status: 'pending',
         payment_status: 'pending',
+        latitude: null,
+        longitude: null,
+        special_instructions: null,
+        cancellation_reason: null,
+        cancelled_by: null,
+        cancelled_at: null,
+        completed_at: null,
       });
-
-      if (error) throw error;
 
       Alert.alert('Success', 'Booking created successfully!', [
         {
@@ -95,7 +96,7 @@ export default function BookingCreate() {
         },
       ]);
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error.message || 'Failed to create booking');
     } finally {
       setCreating(false);
     }

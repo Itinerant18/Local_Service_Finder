@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { supabase, ServiceCategory } from '@/lib/supabase';
+import { ServiceCategory } from '@/lib/firebase';
+import { getServiceCategories, getServiceProviders } from '@/lib/realtime-helpers';
 import { Search as SearchIcon, MapPin, Star, ChevronDown } from 'lucide-react-native';
 
 export default function Search() {
@@ -39,16 +40,15 @@ export default function Search() {
 
   const loadData = async () => {
     try {
-      const [categoriesResult, providersResult] = await Promise.all([
-        supabase.from('service_categories').select('*'),
-        supabase
-          .from('service_providers')
-          .select('*, users:id(full_name, profile_picture_url, city)')
-          .eq('verification_status', 'verified'),
+      const [categories, providers] = await Promise.all([
+        getServiceCategories(),
+        getServiceProviders({
+          verificationStatus: 'verified',
+        }),
       ]);
 
-      setCategories(categoriesResult.data || []);
-      setProviders(providersResult.data || []);
+      setCategories(categories);
+      setProviders(providers);
     } catch (error) {
       console.error('Error loading search data:', error);
     } finally {

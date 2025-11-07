@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { getProviderByUserId, getUserBookings } from '@/lib/realtime-helpers';
 import { TrendingUp, Calendar, Star, DollarSign } from 'lucide-react-native';
 
 export default function ProviderHome() {
@@ -23,27 +23,28 @@ export default function ProviderHome() {
     if (!user?.id) return;
 
     try {
-      const [providerData, bookingsData] = await Promise.all([
-        supabase.from('service_providers').select('*').eq('id', user.id).maybeSingle(),
-        supabase
-          .from('bookings')
-          .select('*')
-          .eq('provider_id', user.id)
-          .gte('booking_date', new Date().toISOString().split('T')[0])
-          .order('booking_date', { ascending: true })
-          .limit(5),
+      const [providerData, allBookings] = await Promise.all([
+        getProviderByUserId(user.id),
+        getUserBookings(user.id, 'provider'),
       ]);
 
-      if (providerData.data) {
+      if (providerData) {
         setStats({
-          totalBookings: providerData.data.total_bookings || 0,
-          completedBookings: providerData.data.completed_bookings || 0,
-          averageRating: providerData.data.average_rating || 0,
+          totalBookings: providerData.total_bookings || 0,
+          completedBookings: providerData.completed_bookings || 0,
+          averageRating: providerData.average_rating || 0,
           totalEarnings: 0,
         });
       }
 
-      setUpcomingBookings(bookingsData.data || []);
+      // Filter upcoming bookings (today or future) and limit to 5
+      const today = new Date().toISOString().split('T')[0];
+      const upcoming = allBookings
+        .filter((b) => b.booking_date >= today)
+        .sort((a, b) => a.booking_date.localeCompare(b.booking_date))
+        .slice(0, 5);
+      
+      setUpcomingBookings(upcoming);
     } catch (error) {
       console.error('Error loading provider data:', error);
     } finally {

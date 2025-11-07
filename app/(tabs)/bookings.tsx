@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase, Booking } from '@/lib/supabase';
+import { Booking } from '@/lib/firebase';
+import { getUserBookings } from '@/lib/realtime-helpers';
 import { Calendar, Clock, MapPin } from 'lucide-react-native';
 
 export default function Bookings() {
@@ -15,21 +16,13 @@ export default function Bookings() {
   }, [user]);
 
   const loadBookings = async () => {
-    if (!user?.id) return;
+    if (!user?.id || !user?.role) return;
 
     try {
-      let query = supabase
-        .from('bookings')
-        .select('*')
-        .or(`customer_id.eq.${user.id},provider_id.eq.${user.id}`)
-        .order('booking_date', { ascending: false });
-
-      if (filter !== 'all') {
-        query = query.eq('status', filter);
-      }
-
-      const { data } = await query;
-      setBookings(data || []);
+      const role = user.role === 'customer' ? 'customer' : 'provider';
+      const statusFilter = filter === 'all' ? undefined : filter;
+      const bookingsData = await getUserBookings(user.id, role, statusFilter);
+      setBookings(bookingsData);
     } catch (error) {
       console.error('Error loading bookings:', error);
     } finally {
